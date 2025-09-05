@@ -18,5 +18,11 @@ class ExpenseTracker:
         else:
             print("Invalid index. No expense removed.")
 
-        self.expenses.remove(expense)
+    def view_expenses(self):
+        if not self.expenses:
+            print("No expenses recorded")
+        else:
+            print("Expenses:")
+            for i, expense in enumerate(self.expenses):
+                print(f"{i}: Date: {expense.date}, Description: {expense.description}, Amount: ${expense.amount:.2f}")
     
