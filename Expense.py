@@ -3,6 +3,7 @@ class Expense:
         self.date = date
         self.description = description
         self.amount = amount
+        self.category = None  # Optional: could be used for categorizing expenses
 
 class ExpenseTracker:
     def __init__(self):
