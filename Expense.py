@@ -1,3 +1,8 @@
+# imports
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
+import datetime
+
 class Expense:
     """Class to represent a single expense"""
     def __init__(self, date, description, amount):
@@ -59,7 +64,47 @@ class ExpenseTracker:
                 print(f"Category '{category}' does not exist. Please add it first.")
         else:
             print("Invalid index. No category assigned.")
+
+    def plot_expenses_line(self):
+        """Plot expenses over time using a line plot"""
+        if not self.expenses:
+            print("No expenses to plot.")
+            return
+        
+        #convert date strings to datetime objects
+        dates = [datetime.datetime.strptime(expense.date, "%Y-%m-%d") for expense in self.expenses]
+        amounts = [expense.amount for expense in self.expenses]
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(dates, amounts, marker='o')
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        plt.gca().xaxis.set_major_locator(mdates.DayLocator())
+        plt.xticks(rotation=45)
+        plt.title('Expenses Over Time - Line Plot')
+        plt.xlabel('Date')
+        plt.ylabel('Amount ($)')
+        plt.tight_layout()
+        plt.show()
     
+    def plot_expenses_box(self):
+        """Plot expenses over time using a box plot"""
+        if not self.expenses:
+            print("No expenses to plot.")
+            return
+        
+        #convert date strings to datetime objects
+        dates = [datetime.datetime.strptime(expense.date, "%Y-%m-%d") for expense in self.expenses]
+        amounts = [expense.amount for expense in self.expenses]
+
+        plt.figure(figsize=(10, 5))
+        plt.boxplot(amounts, vert=True, patch_artist=True)
+        plt.title('Expenses Over Time - Box Plot')
+        plt.ylabel('Amount ($)')
+        plt.xticks([1], ['Expenses'])
+        plt.tight_layout()
+        plt.show()
+
+
 def main():
     tracker = ExpenseTracker()
 
@@ -73,7 +118,10 @@ def main():
         print("5. Add Category")
         print("6. Assign Category to Expense")
         print("7. View Categories")
-        print("8. Exit")
+        print("------------------------------")
+        print("8. line plot of expenses over time")
+        print("9. box plot of expenses over time")
+        print("Type Exit to leave the program")
 
         choice = input("Choose an option (1-5): ")
 
@@ -106,6 +154,10 @@ def main():
                 for cat in tracker.categories:
                     print(f"- {cat}")
         elif choice == '8':
+            tracker.plot_expenses_line()
+        elif choice == '9':
+            tracker.plot_expenses_box()
+        elif choice == 'Exit':
             print("Exiting Expense Tracker.")
             break
         else:
