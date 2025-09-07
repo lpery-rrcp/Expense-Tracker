@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import datetime
+import sqlite3
 
 class Expense:
     """Class to represent a single expense"""
@@ -103,10 +104,55 @@ class ExpenseTracker:
         plt.xticks([1], ['Expenses'])
         plt.tight_layout()
         plt.show()
+    
+class ExpenseDB:
+    """Class to handle database operations for expenses"""
+    def __init__(self, db_name='expenses.db'):
+        """Initialize the database connection and create table if not exists"""
+        self.conn = sqlite3.connect(db_name)
+        self.cursor = self.conn.cursor()
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS expenses (
+                id INTEGER PRIMARY KEY,
+                date TEXT,
+                description TEXT,
+                amount REAL,
+                category TEXT
+            )
+        ''')
+        self.conn.commit()
 
+    def add_expense(self, expense):
+        """Add an expense to the database"""
+        self.cursor.execute('''
+            INSERT INTO expenses (date, description, amount, category)
+            VALUES (?, ?, ?, ?)
+        ''', (expense.date, expense.description, expense.amount, expense.category))
+        self.conn.commit()
+
+    def remove_expense(self, expense_id):
+        """Remove an expense from the database by its ID"""
+        self.cursor.execute('DELETE FROM expenses WHERE id = ?', (expense_id,))
+        self.conn.commit()
+
+    def fetch_expenses(self):
+        """Fetch all expenses from the database"""
+        self.cursor.execute('SELECT * FROM expenses')
+        return self.cursor.fetchall()
+
+    def close(self):
+        """Close the database connection"""
+        self.conn.close()
 
 def main():
     tracker = ExpenseTracker()
+    db = ExpenseDB()
+
+    # Loading saved expernses from the database
+    for row in db.fetch_expenses():
+        expense = Expense(row[1], row[2], row[3]) # date, description, amount
+        expense.category = row[4]                 # category
+        tracker.addExpense(expense)
 
     while True:
         print("\nExpense Tracker Menu:")
@@ -131,9 +177,18 @@ def main():
             amount = float(input("Enter amount: "))
             expense = Expense(date, description, amount)
             tracker.addExpense(expense)
+            db.add_expense(expense)
             print("Expense added.")
         elif choice == '2':
             index = int(input("Enter the index of the expense to remove: "))
+            if 0 <= index < len(tracker.expenses):
+                all_db_expenses = db.fetch_expenses()
+                expense_id = all_db_expenses[index][0]
+                db.remove_expense(expense_id)
+                print("Expense removed from database.")
+            else:
+                print("Invalid index. No expense removed from database.")
+
             tracker.removeExpense(index)
         elif choice == '3':
             tracker.view_expenses()
@@ -146,6 +201,8 @@ def main():
             index = int(input("Enter the index of the expense to categorize: "))
             category = input("Enter category name to assign: ")
             tracker.assign_category(index, category)
+
+           
         elif choice == '7':
             if not tracker.categories:
                 print("No categories available.")
@@ -157,7 +214,8 @@ def main():
             tracker.plot_expenses_line()
         elif choice == '9':
             tracker.plot_expenses_box()
-        elif choice == 'Exit':
+        elif choice.lower() == 'exit':
+            db.close()
             print("Exiting Expense Tracker.")
             break
         else:
