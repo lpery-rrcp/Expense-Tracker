@@ -202,6 +202,12 @@ def main():
             category = input("Enter category name to assign: ")
             tracker.assign_category(index, category)
 
+            # DB
+            all_db_expenses = db.fetch_expenses()
+            db_id = all_db_expenses[index][0]
+            db.cursor.execute('UPDATE expenses SET category = ? WHERE id = ?', (category, db_id))
+            db.conn.commit()
+            print("Catedory updated in database.")
            
         elif choice == '7':
             if not tracker.categories:
