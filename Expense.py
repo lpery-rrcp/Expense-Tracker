@@ -4,8 +4,10 @@ import matplotlib.dates as mdates
 import datetime
 import sqlite3
 
+
 class Expense:
     """Class to represent a single expense"""
+
     def __init__(self, date, description, amount):
         """Initialize an expense with date, description, and amount"""
         self.date = date
@@ -13,16 +15,18 @@ class Expense:
         self.amount = amount
         self.category = None  # Optional: could be used for categorizing expenses
 
+
 class ExpenseTracker:
     """Class to track and manage expenses"""
+
     def __init__(self):
         """Initialize the ExpenseTracker with an empty list of expenses and categories"""
         self.expenses = []
-        self.categories = [] # list of available categories
+        self.categories = []  # list of available categories
 
     def addExpense(self, expense):
         """Add a new expense to the list"""
-        self.expenses.append(expense)   
+        self.expenses.append(expense)
 
     def removeExpense(self, index):
         """Remove an expense by its index in the list"""
@@ -40,29 +44,32 @@ class ExpenseTracker:
             print("Expenses:")
             for i, expense in enumerate(self.expenses):
                 print(f"{i}: Date: {expense.date}, Description: {expense.description}, Amount: ${expense.amount:.2f}, Category: {expense.category if expense.category else 'None'}")
-    
+
     def total_expenses(self):
         """Calculate and return the total amount of all expenses"""
         total = sum(expense.amount for expense in self.expenses)
         print(f"Total Expenses: ${total:.2f}")
         return total
-    
+
     def add_category(self, category):
         """Add a new category to the list of available categories"""
         if category not in self.categories:
             self.categories.append(category)
             print(f"Category '{category}' added to available categories.")
-        else: 
-            print(f"Category '{category}' already exists in available categories.")
+        else:
+            print(
+                f"Category '{category}' already exists in available categories.")
 
     def assign_category(self, index, category):
         """Assign a category to an expense at a given index"""
         if 0 <= index < len(self.expenses):
             if category in self.categories:
                 self.expenses[index].category = category
-                print(f"Category '{category}' assigned to expense at index {index}.")
+                print(
+                    f"Category '{category}' assigned to expense at index {index}.")
             else:
-                print(f"Category '{category}' does not exist. Please add it first.")
+                print(
+                    f"Category '{category}' does not exist. Please add it first.")
         else:
             print("Invalid index. No category assigned.")
 
@@ -71,9 +78,10 @@ class ExpenseTracker:
         if not self.expenses:
             print("No expenses to plot.")
             return
-        
-        #convert date strings to datetime objects
-        dates = [datetime.datetime.strptime(expense.date, "%Y-%m-%d") for expense in self.expenses]
+
+        # convert date strings to datetime objects
+        dates = [datetime.datetime.strptime(
+            expense.date, "%Y-%m-%d") for expense in self.expenses]
         amounts = [expense.amount for expense in self.expenses]
 
         plt.figure(figsize=(10, 5))
@@ -86,15 +94,16 @@ class ExpenseTracker:
         plt.ylabel('Amount ($)')
         plt.tight_layout()
         plt.show()
-    
+
     def plot_expenses_box(self):
         """Plot expenses over time using a box plot"""
         if not self.expenses:
             print("No expenses to plot.")
             return
-        
-        #convert date strings to datetime objects
-        dates = [datetime.datetime.strptime(expense.date, "%Y-%m-%d") for expense in self.expenses]
+
+        # convert date strings to datetime objects
+        dates = [datetime.datetime.strptime(
+            expense.date, "%Y-%m-%d") for expense in self.expenses]
         amounts = [expense.amount for expense in self.expenses]
 
         plt.figure(figsize=(10, 5))
@@ -104,9 +113,11 @@ class ExpenseTracker:
         plt.xticks([1], ['Expenses'])
         plt.tight_layout()
         plt.show()
-    
+
+
 class ExpenseDB:
     """Class to handle database operations for expenses"""
+
     def __init__(self, db_name='expenses.db'):
         """Initialize the database connection and create table if not exists"""
         self.conn = sqlite3.connect(db_name)
@@ -144,13 +155,14 @@ class ExpenseDB:
         """Close the database connection"""
         self.conn.close()
 
+
 def main():
     tracker = ExpenseTracker()
     db = ExpenseDB()
 
     # Loading saved expernses from the database
     for row in db.fetch_expenses():
-        expense = Expense(row[1], row[2], row[3]) # date, description, amount
+        expense = Expense(row[1], row[2], row[3])  # date, description, amount
         expense.category = row[4]                 # category
         tracker.addExpense(expense)
 
@@ -169,7 +181,7 @@ def main():
         print("9. box plot of expenses over time")
         print("Type Exit to leave the program")
 
-        choice = input("Choose an option (1-5): ")
+        choice = input("Choose an option (1-9) or exit: ")
 
         if choice == '1':
             date = input("Enter date (YYYY-MM-DD): ")
@@ -198,17 +210,19 @@ def main():
             category = input("Enter new category name: ")
             tracker.add_category(category)
         elif choice == '6':
-            index = int(input("Enter the index of the expense to categorize: "))
+            index = int(
+                input("Enter the index of the expense to categorize: "))
             category = input("Enter category name to assign: ")
             tracker.assign_category(index, category)
 
             # DB
             all_db_expenses = db.fetch_expenses()
             db_id = all_db_expenses[index][0]
-            db.cursor.execute('UPDATE expenses SET category = ? WHERE id = ?', (category, db_id))
+            db.cursor.execute(
+                'UPDATE expenses SET category = ? WHERE id = ?', (category, db_id))
             db.conn.commit()
             print("Catedory updated in database.")
-           
+
         elif choice == '7':
             if not tracker.categories:
                 print("No categories available.")
@@ -226,6 +240,7 @@ def main():
             break
         else:
             print("Invalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main()
