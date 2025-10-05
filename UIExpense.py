@@ -109,6 +109,24 @@ class ExpenseApp:
                         f"${expense.amount: .2f}", expense.category or "None"))
 
         # Add remove button
+        def remove_selected():
+            selected = tree.selection()
+            if not selected:
+                messagebox.showwarning(
+                    "No selection", "Please select an expense to remove.")
+                return
+
+            index = tree.index(selected[0])
+            all_db_expenses = self.db.fetch_expenses()
+            if 0 <= index < len(all_db_expenses):
+                expense_id = all_db_expenses[index][0]
+                self.db.remove_expense(expense_id)
+                self.tracker.removeExpense(index)
+                tree.delete(selected[0])
+                messagebox.showinfo("Remove", "Expense removed successfully.")
+
+        tk.Button(window, text="Remove Selected",
+                  command=remove_selected).pack(pady=5)
 
     def show_total(self):
         total = self.tracker.total_expenses()
