@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from Expense import Expense, ExpenseTracker, ExpenseDB
 import datetime
 
@@ -40,31 +40,33 @@ class ExpenseApp:
         window = tk.Toplevel(self.root)
         window.title("Add Expense")
 
-        # inputs
-        tk.Label(window, text="Date (YYYY-MM-DD): ").grid(row=0,
-                                                          column=0, padx=5, pady=5)
+        # labels
+        tk.Label(window, text="Date (YYYY-MM-DD):").grid(row=0,
+                                                         column=0, padx=5, pady=5)
+        tk.Label(window, text="Desciption:").grid(
+            row=1, column=0, padx=5, pady=5)
+        tk.Label(window, text="Amount:").grid(row=2, column=0, padx=5, pady=5)
+        tk.Label(window, text="Category (optional):").grid(
+            row=3, column=0, padx=5, pady=5)
+
+        # Entry Feilds
         date_entry = tk.Entry(window)
         date_entry.grid(row=0, column=0, padx=5, pady=5)
         date_entry.insert(0, datetime.date.today().strftime("%Y-%m-%d"))
 
-        tk.Label(window, text="Desciption: ").grid(
-            row=0, column=0, padx=5, pady=5)
         desc_entry = tk.Entry(window)
         desc_entry.grid(row=1, column=1, padx=5, pady=5)
 
-        tk.Label(window, text="Amount: ").grid(row=0, column=0, padx=5, pady=5)
         amount_entry = tk.Entry(window)
         amount_entry.grid(row=2, column=1, padx=5, pady=5)
 
-        tk.Label(window, text="Category (optional): ").grid(
-            row=0, column=0, padx=5, pady=5)
         category_entry = tk.Entry(window)
         category_entry.grid(row=3, column=1, padx=5, pady=5)
 
         def save_expense():
             try:
-                date_val = date_entry.get()
-                datetime.datetime.strftime(
+                date_val = date_entry.get().strip()
+                datetime.datetime.strptime(
                     date_val, "%Y-%m-%d")  # valid date format
                 description = desc_entry.get().strip()
                 amount = float(amount_entry.get().strip())
@@ -85,12 +87,28 @@ class ExpenseApp:
                 messagebox.showerror(
                     "Error", "Invalid input. Please check your entries.")
 
-            tk.Button(window, text="Add Expense", command=save_expense).grid(
-                row=4, column=0, columnspan=2, pady=10)
+        tk.Button(window, text="Add Expense", command=save_expense).grid(
+            row=4, column=0, columnspan=2, pady=10)
 
     def view_expense_window(self):
-        messagebox.showinfo(
-            "View Expenses", "Build the expense viewer (Step 3)")
+        """Window to view all expenses"""
+        window = tk.Toplevel(self.root)
+        window.title("View Expenses:")
+
+        # Create Treeview
+        columns = ("Date", "Description", "Amount", "Category")
+        tree = ttk.Treeview(window, columns=columns, show="headings")
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, width=150)
+        tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+
+        # table
+        for expense in self.tracker.expenses:
+            tree.insert("", tk.END, values=(expense.date, expense.description,
+                        f"${expense.amount: .2f}", expense.category or "None"))
+
+        # Add remove button
 
     def show_total(self):
         total = self.tracker.total_expenses()
