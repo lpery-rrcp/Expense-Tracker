@@ -129,8 +129,46 @@ class ExpenseApp:
                   command=remove_selected).pack(pady=5)
 
     def show_total(self):
-        total = self.tracker.total_expenses()
-        messagebox.showinfo("Total Expenses", f"Total Expenses: ${total:.2}")
+        window = tk.Toplevel(self.root)
+        window.title("Total Expenses")
+
+        tk.Label(
+            window, text="Select Category(s) (Ctrl+Click for multiple):").pack(pady=5)
+
+        categories = list(
+            set(exp.category for exp in self.tracker.expenses if exp.category))
+        categories.sort()
+
+        # Add "All" at the top
+        categories.insert(0, "All")
+
+        listbox = tk.Listbox(window, selectmode=tk.MULTIPLE, height=10)
+        for cat in categories:
+            listbox.insert(tk.END, cat)
+        listbox.pack(padx=10, pady=5)
+
+        def calculate_total():
+            selected_indices = listbox.curselection()
+            if not selected_indices:
+                messagebox.showwarning(
+                    "No selection", "Please select at least one category")
+                return
+
+            selected_categories = [listbox.get(i) for i in selected_indices]
+
+            if "All" in selected_categories:
+                total = self.tracker.total_expenses()
+                chosen = "All"
+            else:
+                total = sum(
+                    exp.amount for exp in self.tracker.expenses if exp.category in selected_categories)
+                chosen = ", ".join(selected_categories)
+
+            messagebox.showinfo(
+                "Total Expenses", f"Total for '{chosen}': ${total:.2f}")
+
+        tk.Button(window, text="Show Total",
+                  command=calculate_total).pack(pady=10)
 
     def exit_app(self):
         self.db.close()
